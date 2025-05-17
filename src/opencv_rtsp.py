@@ -1,10 +1,24 @@
-import cv2
+import cv2, os, ast
 import numpy as np
 from dotenv import load_dotenv, dotenv_values
 load_dotenv()
 config = dotenv_values(".env")
 
 rtsp_url = config['RTSP_URL']
+
+# CHange string to truthy boolean 
+is_red_color = os.getenv("IS_RED_COLOR", "False").lower() == "true"
+
+# Helper function to parse string to list
+def parse_env_list(env_key):
+    value_str = os.getenv(env_key)
+    if value_str is None:
+        raise ValueError(f"Environment variable {env_key} not found.")
+    try:
+        return np.array(ast.literal_eval(value_str), dtype=np.uint8)
+    except Exception as e:
+        raise ValueError(f"Invalid format for {env_key}: {value_str}") from e
+
 
 def read_rtsp(pulse_queue, stop_flag):
 
@@ -29,20 +43,27 @@ def read_rtsp(pulse_queue, stop_flag):
                 continue
 
             frame = cv2.resize(frame, (640, 480))
-
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-            lower_red1 = np.array([0, 120, 70])
-            upper_red1 = np.array([10, 255, 255])
+            print(is_red_color)
+            # Red appears at both low and high ends of the hue spectrum
+            if is_red_color is True:
+                lower_1 = np.array(parse_env_list("HSV_LOWER_1"))
+                upper_1 = np.array(parse_env_list("HSV_UPPER_1"))
 
-            lower_red2 = np.array([170, 120, 70])
-            upper_red2 = np.array([180, 255, 255])
+                lower_2 = np.array(parse_env_list("HSV_LOWER_2"))
+                upper_2 = np.array(parse_env_list("HSV_UPPER_2"))
 
-            mask1 = cv2.inRange(hsv_frame, lower_red1, upper_red1)
-            mask2 = cv2.inRange(hsv_frame, lower_red2, upper_red2)
-            red_mask = cv2.bitwise_or(mask1, mask2)
+                mask1 = cv2.inRange(hsv_frame, lower_1, upper_1)
+                mask2 = cv2.inRange(hsv_frame, lower_2, upper_2)
+                mask = cv2.bitwise_or(mask1, mask2)
+            else:
+                # Other colors
+                lower = np.array(parse_env_list("HSV_LOWER_1"))
+                upper = np.array(parse_env_list("HSV_UPPER_1"))
+                mask = cv2.inRange(hsv_frame, lower, upper)
 
-            contours, _ = cv2.findContours(red_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
             for cnt in contours:
                 area = cv2.contourArea(cnt)
@@ -52,9 +73,8 @@ def read_rtsp(pulse_queue, stop_flag):
                     pulse_queue.put(True)  # Signal pulse detection
 
             # Uncomment to display a frame
-            cv2.imshow('Original Stream', frame)
-            # cv2.imshow('Red Detection Mask', red_mask)
-            # cv2.imshow('Red Only', red_only)
+            # cv2.imshow('Original Stream', frame)
+            # cv2.imshow('Detection Mask', mask)
 
             # Must have to display cv2.imshow()
             if cv2.waitKey(1) == ord('q'):
