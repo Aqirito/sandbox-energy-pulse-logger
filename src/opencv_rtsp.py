@@ -45,7 +45,6 @@ def read_rtsp(pulse_queue, stop_flag):
             frame = cv2.resize(frame, (640, 480))
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-            print(is_red_color)
             # Red appears at both low and high ends of the hue spectrum
             if is_red_color is True:
                 lower_1 = np.array(parse_env_list("HSV_LOWER_1"))

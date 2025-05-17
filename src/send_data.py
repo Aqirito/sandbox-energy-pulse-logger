@@ -19,8 +19,8 @@ def send(measurement_data, stop_flag):
         if measurement_data.copy() != previous_data:
             try:
                 print(f"[Send] Sending data: {measurement_data.copy()}")
-                # response = requests.post(api_url, json=measurement_data.copy())
-                # response.raise_for_status()
+                response = requests.post(api_url, json=measurement_data.copy())
+                response.raise_for_status()
 
                 # Update previous data
                 previous_data = measurement_data.copy()
