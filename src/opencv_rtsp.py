@@ -26,7 +26,7 @@ def read_rtsp(pulse_queue, stop_flag):
 
     if not cap.isOpened():
         print("Error: Could not open video stream")
-        return
+        stop_flag.value = 1  # Set stop flag
 
     print("RTSP stream started...")
 
@@ -42,7 +42,7 @@ def read_rtsp(pulse_queue, stop_flag):
                 print("Error: Can't receive frame (stream end?). Retrying...")
                 continue
 
-            frame = cv2.resize(frame, (640, 480))
+            frame = cv2.resize(frame, (640, 200))
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
             # Red appears at both low and high ends of the hue spectrum
@@ -66,13 +66,13 @@ def read_rtsp(pulse_queue, stop_flag):
 
             for cnt in contours:
                 area = cv2.contourArea(cnt)
-                if 500 < area < 6000:
-                    x, y, w, h = cv2.boundingRect(cnt)
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                if 10 > area and area < 6000:
+                    # x, y, w, h = cv2.boundingRect(cnt)
+                    # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
                     pulse_queue.put(True)  # Signal pulse detection
 
             # Uncomment to display a frame
-            # cv2.imshow('Original Stream', frame)
+            cv2.imshow('Original Stream', frame)
             # cv2.imshow('Detection Mask', mask)
 
             # Must have to display cv2.imshow()

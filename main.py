@@ -44,7 +44,6 @@ if __name__ == "__main__":
             args=(measurement_data, stop_flag)
         )
 
-
         try:
             rtsp_process.start()
             measure_process_1.start()

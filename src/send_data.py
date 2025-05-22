@@ -18,11 +18,12 @@ def send(measurement_data, stop_flag):
         # Check if data has changed
         if measurement_data.copy() != previous_data:
             try:
-                print(f"[Send] Sending data: {measurement_data.copy()}")
                 response = requests.post(api_url, json=measurement_data.copy())
                 response.raise_for_status()
-
+                print(f"[Send] Sending data: {measurement_data.copy()}")
+                
                 # Update previous data
                 previous_data = measurement_data.copy()
             except requests.exceptions.RequestException as e:
                 print(f"Error sending data: {e}")
+                stop_flag.value = 1  # Set stop flag on error

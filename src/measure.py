@@ -25,7 +25,7 @@ def calculate(pulse_count, measurement_data, stop_flag):
     while True:
     # Check if stop signal was sent
         if stop_flag.value:
-            print("Stop flag received. Exiting RTSP loop.")
+            print("Stop flag received. Exiting Measure loop.")
             break
         time.sleep(interval)
 
