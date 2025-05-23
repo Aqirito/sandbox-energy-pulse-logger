@@ -7,6 +7,7 @@ Measuring energy consumption using a pulse-output electricity meter and reading 
 - Python = 3.12.3
 
 ## Setup and Running
+Note: If using Adafruit IO you need to create a `feed` with the name `energy` and `pulses` in your Adafruit IO account.
 1. Create python virtual environment named `env/`
 2. Install Required pip packages
 3. Create `.env` file follow `.env-sample` and change the value needed.

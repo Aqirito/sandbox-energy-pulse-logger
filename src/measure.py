@@ -1,6 +1,7 @@
 # measure.py
 import time
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv, dotenv_values
 load_dotenv()
 config = dotenv_values(".env")
@@ -35,8 +36,12 @@ def calculate(pulse_count, measurement_data, stop_flag):
 
         kwh = current_pulses / pulse_per_kWh
 
+        now_utc = datetime.now(timezone.utc)
+        local_tz = ZoneInfo("Asia/Kuala_Lumpur")
+        now_local = now_utc.astimezone(local_tz)
+        
         data = {
-            'timestamp': datetime.now().isoformat(),  # Standardized timestamp
+            'timestamp': now_local.isoformat(),  # Standardized timestamp
             'pulses': current_pulses,
             'kWh': f"{kwh:.6f}"  # Format kWh as string for consistency
         }
