@@ -18,32 +18,34 @@ elif TOKEN != "" and IS_ADAFRUIT_IO is False:
     HEADERS["Authorization"] = f"Bearer {TOKEN}"
 
 def send(measurement_data, stop_flag):
-    # Store previous data to compare
+    # Initialize a variable to store the previous data for comparison
     previous_data = {'timestamp': '', 'pulses': 0, 'kWh': '0.000000'}
 
+    # Continuously send data until shutdown is requested
     while True:
-        # Check for graceful shutdown
+        # Check if the shutdown flag is set
         if stop_flag.value:
             print("Send process: Shutdown flag detected. Exiting.")
             break
 
-        # Check if data has changed
+        # Check if the measurement data has changed since the last send
         if measurement_data.copy() != previous_data:
+            # If the data is being sent to a non-Adafruit IO API
             if IS_ADAFRUIT_IO is False:            
-                # originally, the data was sent to the API
+                # Send the data to the specified API endpoint
                 try:
                     response = requests.post(API_URL, headers=HEADERS, json=measurement_data.copy())
                     response.raise_for_status()
                     print(f"[Send] Sending data: {measurement_data.copy()}")
                     
-                    # Update previous data
+                    # Update the previous data with the current measurement data
                     previous_data = measurement_data.copy()
                 except requests.exceptions.RequestException as e:
                     print(f"Error sending data: {e}")
-                    stop_flag.value = 1  # Set stop flag on error
+                    stop_flag.value = 1  # Set the stop flag if an error occurs
             else:
+                # If the data is being sent to Adafruit IO, send the kWh value to the energy feed
                 try:
-                    # Send kWh value to Adafruit IO
                     payload = measurement_data.copy()
 
                     energy_data = {
