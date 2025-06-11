@@ -114,7 +114,7 @@ def read_rtsp(pulse_queue, stop_flag):
             # Debouncing logic: Only count a pulse on the leading edge (transition from off to on)
             # and if enough time has passed since the last valid pulse.
             if pulse_currently_on and not pulse_was_on_in_previous_frame:
-                print((current_time - last_pulse_detected_time))
+                # print((current_time - last_pulse_detected_time))
                 if (current_time - last_pulse_detected_time) > pulse_debounce_period:
                     pulse_queue.put(True)  # Signal a new, debounced pulse detection
                     last_pulse_detected_time = current_time
