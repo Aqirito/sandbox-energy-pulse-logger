@@ -36,10 +36,15 @@ def read_rtsp(pulse_queue, stop_flag):
         pulse_queue (multiprocessing.Queue): A queue to put pulse detection signals.
         stop_flag (multiprocessing.Value): A shared flag to signal process termination.
     """
-    cap = cv2.VideoCapture(rtsp_url)
+    def create_capture():
+        cap = cv2.VideoCapture(rtsp_url)
+        if not cap.isOpened():
+            print("Error: Could not open video stream")
+            return None
+        return cap
 
-    if not cap.isOpened():
-        print("Error: Could not open video stream")
+    cap = create_capture()
+    if cap is None:
         stop_flag.value = 1  # Set stop flag on failure to open stream
         return
 
@@ -67,9 +72,24 @@ def read_rtsp(pulse_queue, stop_flag):
             ret, frame = cap.read()
             if not ret:
                 print("Error: Can't receive frame (stream end?). Retrying...")
-                # Add a small delay before retrying to avoid busy-waiting
-                time.sleep(1)
+                
+                # Try to reconnect indefinitely until successful
+                print("Attempting to reconnect...")
+                cap.release()  # Release the current capture object
+                
+                # Keep trying to create a new connection until successful
+                while True:
+                    cap = create_capture()
+                    if cap is not None:
+                        print("Successfully reconnected to RTSP stream.")
+                        break
+                    else:
+                        print("Failed to reconnect to RTSP stream. Retrying in 5 seconds...")
+                        time.sleep(5)  # Wait before retrying
+                
                 continue
+
+            # Resize frame for consistent processing and display
 
             # Resize frame for consistent processing and display
             frame = cv2.resize(frame, (640, 200))
