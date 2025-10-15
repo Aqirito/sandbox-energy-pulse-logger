@@ -144,7 +144,8 @@ def read_rtsp(pulse_queue, stop_flag):
             pulse_was_on_in_previous_frame = pulse_currently_on
 
             # Display the original stream frame (optional, for debugging)
-            cv2.imshow('Original Stream', frame)
+            # Don't use when on raspberry pi console mode
+            # cv2.imshow('Original Stream', frame)
             # You can also uncomment below to see the color detection mask
             # cv2.imshow('Detection Mask', mask)
 
