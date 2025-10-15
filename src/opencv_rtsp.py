@@ -43,10 +43,15 @@ def read_rtsp(pulse_queue, stop_flag):
             return None
         return cap
 
-    cap = create_capture()
-    if cap is None:
-        stop_flag.value = 1  # Set stop flag on failure to open stream
-        return
+    # Keep trying to create a new connection until successful
+    while True:
+        cap = create_capture()
+        if cap is not None:
+            print("Successfully reconnected to RTSP stream.")
+            break
+        else:
+            print("Failed to reconnect to RTSP stream. Retrying in 5 seconds...")
+            time.sleep(5)  # Wait before retrying
 
     print("RTSP stream started...")
 
